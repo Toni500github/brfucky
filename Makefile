@@ -38,7 +38,7 @@ ifeq ($(shell uname -s),Darwin)
 	CXXFLAGS += -stdlib=libc++
 endif
 
-all: fmt toml $(TARGET)
+all: fmt $(TARGET)
 
 fmt:
 ifeq ($(wildcard $(BUILDDIR)/fmt/libfmt.a),)
@@ -46,15 +46,9 @@ ifeq ($(wildcard $(BUILDDIR)/fmt/libfmt.a),)
 	make -C src/fmt BUILDDIR=$(BUILDDIR)/fmt CXXSTD=$(CXXSTD)
 endif
 
-toml:
-ifeq ($(wildcard $(BUILDDIR)/toml++/toml.o),)
-	mkdir -p $(BUILDDIR)/toml++
-	make -C src/toml++ BUILDDIR=$(BUILDDIR)/toml++ CXXSTD=$(CXXSTD)
-endif
-
-$(TARGET): fmt toml $(OBJ)
+$(TARGET): fmt $(OBJ)
 	mkdir -p $(BUILDDIR)
-	$(CXX) $(OBJ) $(BUILDDIR)/toml++/toml.o -o $(BUILDDIR)/$(TARGET) $(LDFLAGS)
+	$(CXX) $(OBJ) -o $(BUILDDIR)/$(TARGET) $(LDFLAGS)
 
 dist:
 	bsdtar -zcf $(NAME)-v$(VERSION).tar.gz LICENSE $(TARGET).1 -C $(BUILDDIR) $(TARGET)
@@ -71,4 +65,4 @@ distclean:
 updatever:
 	sed -i "s#$(OLDVERSION)#$(VERSION)#g" $(wildcard .github/workflows/*.yml) compile_flags.txt
 
-.PHONY: $(TARGET) updatever dist fmt toml distclean both install all
+.PHONY: $(TARGET) updatever dist fmt distclean both install all
